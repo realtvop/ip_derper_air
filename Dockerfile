@@ -38,7 +38,7 @@ ENV TS_EXTRA_ARGS="--advertise-tags=tag:container"
 
 # 安装依赖（与原 Dockerfile 保持一致）
 RUN apk update && \
-    apk add openssl curl
+    apk add openssl curl caddy
 
 #RUN curl -fsSL https://tailscale.com/install.sh | sh
 
@@ -46,10 +46,11 @@ RUN apk update && \
 COPY --from=builder /app/derper /app/derper
 COPY build_cert.sh /app/
 COPY start_ts.sh /app/
-
+COPY start_caddy.sh /app/
 
 # build self-signed certs && start derper
 CMD /bin/sh /app/start_ts.sh && \
+    /bin/sh /app/start_caddy.sh && \
     /bin/sh /app/build_cert.sh $DERP_HOST $DERP_CERTS /app/san.conf && \
     tailscale netcheck && \
     /app/derper --hostname=$DERP_HOST \
